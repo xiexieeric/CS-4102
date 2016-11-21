@@ -1,43 +1,46 @@
 import sys
-import time
-def findAugPath(p):
+def findAugPath(p,visited):
     visiting = p[-1]
     if(visiting=="happystudents"):
         return p
     for edge in nodes[visiting].keys():
-        if nodes[visiting][edge][0]>0 and edge not in p:
+        if nodes[visiting][edge]>0 and not visited.get(edge):
             p.append(edge)
-            val=findAugPath(p)
+            visited[edge]=True
+            val=findAugPath(p,visited)
             if val:
                 return p
             else:
                 p.pop()
     return False
 def solve():
-    p=findAugPath(["flockofstudents"])
+    visited={}
+    visited["flockofstudents"]=True
+    p=findAugPath(["flockofstudents"],visited)
     while(p):
         for i in range(0,len(p)-1):
             if i==0:
-                nodes["flockofstudents"][p[i+1]][0]-=1
+                nodes["flockofstudents"][p[i+1]]-=1
             elif i==len(p)-2:
-                nodes[p[i]]["happystudents"][0]-=1
+                nodes[p[i]]["happystudents"]-=1
             else:
-                nodes[p[i]][p[i+1]][0]-=1
-                nodes[p[i+1]][p[i]][0]+=1
+                nodes[p[i]][p[i+1]]-=1
+                nodes[p[i+1]][p[i]]+=1
         #print(p)
         #for node in nodes.keys():
         #    print(node,nodes[node])
         #print("\n")
-        p=findAugPath(["flockofstudents"])
+        visited={}
+        visited["flockofstudents"]=True
+        p=findAugPath(["flockofstudents"],visited)
 def verify():
     valid = True
     for edge in nodes["flockofstudents"].keys():
-        if nodes["flockofstudents"][edge][0]>0:
+        if nodes["flockofstudents"][edge]>0:
             valid=False
     return valid
 
 #Read in File, split into cases
-start_time=time.time()
 f = open(sys.argv[1],"r")
 content = f.readlines()
 cases=[]
@@ -65,18 +68,17 @@ for case in cases:
           temp = case[i].split()
           if not nodes.get(temp[0]):
               nodes[temp[0]]={}
-              nodes["flockofstudents"][temp[0]]=[n,True]
-          nodes[temp[0]][temp[1]]=[1,True]
+              nodes["flockofstudents"][temp[0]]=n
+          nodes[temp[0]][temp[1]]=1
           if not nodes.get(temp[1]):
               nodes[temp[1]]={}
-          nodes[temp[1]][temp[0]]=[0,False]
+          nodes[temp[1]][temp[0]]=0
     for i in range(r+1,r+1+c):
         temp = case[i].split()
         #sinkEdge = [int(temp[1]),True]
-        nodes[temp[0]]["happystudents"]= [int(temp[1]),True]
+        nodes[temp[0]]["happystudents"]= int(temp[1])
     solve()
     if verify():
         print("Yes")
     else:
         print("No")
-    print(time.time()-start_time)
